@@ -18,21 +18,22 @@ if [ ! -f myip ]; then
 	echo $LIVEIP >myip
 fi 
 
-CURRENTIP=`head -1 myip`
-
-if [ $LIVEIP!=$CURRENTIP ]; then 
-        echo $LIVEIP >myip
-fi
-
-# read myip and upload a html script with a forwarder
 MYIP=`head -1 myip`
 
-printf -v HTML %s '<html>\n<head>\n<meta http-equiv="refresh" content="0; URL=http://' ${MYIP} '">\n</head>\n</html>';
+if [ $LIVEIP!=$MYIP ]; then 
+	# ip changed write to myip
+        echo $LIVEIP >myip
+	# read new ip and upload a html script with a forwarder to your new ip
+	NEWIP=`head -1 myip`
+	printf -v HTML %s '<html>\n<head>\n<meta http-equiv="refresh" content="0; URL=http://' ${NEWIP} '">\n</head>\n</html>';
+	echo -e $HTML >redirect.html
 
-echo -e $HTML >redirect.html
+	# upload redirect.html file to your webspace
+	#curl --ssl-reqd --ftp-ssl-ccc -u $FTPUSER:$FTPWD ftp://$FTPSERVER/ -v -k -T redirect.html
 
-# upload redirect.html file to your webspace
-#curl --ssl-reqd --ftp-ssl-ccc -u $FTPUSER:$FTPWD ftp://$FTPSERVER/ -v -k -T redirect.html
+	# delete redirect.html
+	#rm -f redirect.html
+fi
 
-# delete redirect.html
-#rm -f redirect.html
+exit
+
