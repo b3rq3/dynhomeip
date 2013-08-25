@@ -2,12 +2,15 @@
 #
 #  place this script in ~/.dynhomeip
 #  and generate a cronjob e.g. for every 10 minutes to check your ip-address
-#  create also a ftp.login file with your ftp credentials and ftp-server in ~/.dynhomeip 
+#  create also a ~/ftp.login file with your ftp credentials and ftp-server
 #  the only thing you need is a webspace to upload the redirect.html file
 #  have fun
 
-FTPLOGIN=`awk 'NR==1' ftp.login`
-FTPSERVER=`awk 'NR==2' ftp.login`
+# first line of your ftp.login should be LOGINNAME:PASSWORD
+FTPLOGIN=`awk 'NR==1' ~/ftp.login`
+# second line of your ftp.login should point to your ftpserver incl. path like
+# ftpserver.example.com/upload_path/
+FTPSERVER=`awk 'NR==2' ~/ftp.login`
 
 # \o/ duckduckgo - let's get our current ip address
 LIVEIP=`curl -s https://duckduckgo.com/?q=my+ip | egrep -o '([[:digit:]]{1,3}\.){3}[[:digit:]]{1,3}'`
