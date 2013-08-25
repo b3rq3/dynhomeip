@@ -24,7 +24,7 @@ MYIP=`head -1 myip`
 if [ "$LIVEIP" != "$MYIP" ]; then 
 	# ip changed write to myip
         echo $LIVEIP >myip
-	# read new ip and upload a html file with a forwarder to your new ip
+	# read new ip and write a html file with a forwarder to your new ip
 	NEWIP=`head -1 myip`
 	printf -v HTML %s '<html>\n<head>\n<meta http-equiv="refresh" content="0; URL=http://' ${NEWIP} '">\n</head>\n</html>';
 	echo -e $HTML >redirect.html
