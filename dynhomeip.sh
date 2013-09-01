@@ -6,11 +6,16 @@
 #  the only thing you need is a webspace to upload the redirect.html file
 #  have fun
 
-# first line of your ftp.login should be LOGINNAME:PASSWORD
-FTPLOGIN=`awk 'NR==1' ~/ftp.login`
-# second line of your ftp.login should point to your ftpserver incl. path like
-# ftpserver.example.com/upload_path/
-FTPSERVER=`awk 'NR==2' ~/ftp.login`
+
+if [ -f ~/ftp.login ]; then
+	# first line of your ftp.login should be LOGINNAME:PASSWORD
+	FTPLOGIN=`awk 'NR==1' ~/ftp.login`
+	# second line of your ftp.login should point to your ftpserver incl. path like	
+	# ftpserver.example.com/upload_path/
+	FTPSERVER=`awk 'NR==2' ~/ftp.login`
+else 
+	echo "please create your ~/ftp.login"
+fi
 
 # \o/ duckduckgo - let's get our current ip address
 LIVEIP=`curl -s https://duckduckgo.com/?q=my+ip | egrep -o '([[:digit:]]{1,3}\.){3}[[:digit:]]{1,3}'`
@@ -36,8 +41,6 @@ if [ "$LIVEIP" != "$MYIP" ]; then
 	# if your ftp doesn't support tls use this 
 	# curl -s -S -u $FTPLOGIN ftp://$FTPSERVER -T redirect.html
 
-	#rm -f redirect.html
 fi
 
 exit
-
