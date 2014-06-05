@@ -6,41 +6,50 @@
 #  the only thing you need is a webspace to upload the redirect.html file
 #  have fun
 
+ftplogin () {
+	if [ -f ~/ftp.login ]; then
+		# first line of your ftp.login should be LOGINNAME:PASSWORD
+		readonly FTPLOGIN=$(awk 'NR==1' ~/ftp.login)
+		# second line of your ftp.login should point to your ftpserver incl. path like	
+		# ftpserver.example.com/upload_path/
+		readonly FTPSERVER=$(awk 'NR==2' ~/ftp.login)
+	else 
+		echo "please create your ~/ftp.login"
+	fi
+}
 
-if [ -f ~/ftp.login ]; then
-	# first line of your ftp.login should be LOGINNAME:PASSWORD
-	FTPLOGIN=`awk 'NR==1' ~/ftp.login`
-	# second line of your ftp.login should point to your ftpserver incl. path like	
-	# ftpserver.example.com/upload_path/
-	FTPSERVER=`awk 'NR==2' ~/ftp.login`
-else 
-	echo "please create your ~/ftp.login"
-fi
+getip () {
+	# \o/ duckduckgo - let's get our current ip address
+	liveip=$(curl -s https://duckduckgo.com/?q=my+ip+address | egrep -o '([[:digit:]]{1,3}\.){3}[[:digit:]]{1,3}')
+	
+	if [ ! -f myip ]; then
+		echo $liveip >myip
+	fi 
+	
+	myip=$(< myip)
+}
 
-# \o/ duckduckgo - let's get our current ip address
-LIVEIP=`curl -s https://duckduckgo.com/?q=my+ip | egrep -o '([[:digit:]]{1,3}\.){3}[[:digit:]]{1,3}'`
+main () {
+	ftplogin
+	getip
+	if [ "$liveip" != "$myip" ]; then 
+		# ip changed write to myip
+	        echo $liveip >myip
+		# read new ip and write a html file with a forwarder to your new ip
+		newip=$(head -1 myip)
+		printf -v HTML %s '<html>\n<head>\n<meta http-equiv="refresh" content="0; URL=http://' ${newip} '">\n</head>\n</html>';
+		echo -e $HTML >redirect.html
+	
+		# upload redirect.html file to your webspace
+		# -k means there is no certificate check, this can be insecure
+		curl -s -S --ssl-reqd -u $FTPLOGIN ftp://$FTPSERVER -k -T redirect.html
+	
+		# if your ftp doesn't support tls use this 
+		# curl -s -S -u $FTPLOGIN ftp://$FTPSERVER -T redirect.html
+	
+	fi
+}
 
-if [ ! -f myip ]; then
-	echo $LIVEIP >myip
-fi 
-
-MYIP=`head -1 myip`
-
-if [ "$LIVEIP" != "$MYIP" ]; then 
-	# ip changed write to myip
-        echo $LIVEIP >myip
-	# read new ip and write a html file with a forwarder to your new ip
-	NEWIP=`head -1 myip`
-	printf -v HTML %s '<html>\n<head>\n<meta http-equiv="refresh" content="0; URL=http://' ${NEWIP} '">\n</head>\n</html>';
-	echo -e $HTML >redirect.html
-
-	# upload redirect.html file to your webspace
-	# -k means there is no certificate check, this can be insecure
-	curl -s -S --ssl-reqd -u $FTPLOGIN ftp://$FTPSERVER -k -T redirect.html
-
-	# if your ftp doesn't support tls use this 
-	# curl -s -S -u $FTPLOGIN ftp://$FTPSERVER -T redirect.html
-
-fi
+main
 
 exit
