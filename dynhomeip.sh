@@ -5,6 +5,8 @@
 #  create also a ~/ftp.login file with your ftp credentials and ftp-server
 #  the only thing you need is a webspace to upload the redirect.html file
 #  have fun
+set -eu
+set -o pipefail
 
 ftplogin () {
 	if [ -f ~/ftp.login ]; then
